@@ -3,39 +3,53 @@ import pool from "../config/database";
 
 const router: Router = express.Router();
 
-// GET all movies
-router.get("/", async (_req: Request, res: Response): Promise<void> => {
+// ✅ Get all movies with filtering, sorting, and pagination
+router.get("/", async (req: Request, res: Response): Promise<void> => {
 	try {
-		const result = await pool.query("SELECT * FROM movies");
-		res.json(result.rows);
+		const { genre, year, min_rating, sort_by, order, page, limit } =
+			req.query;
+
+		let query = "SELECT * FROM movies WHERE 1=1";
+		const params: any[] = [];
+
+		if (genre) {
+			params.push(genre);
+			query += ` AND genre = $${params.length}`;
+		}
+
+		if (year) {
+			params.push(year);
+			query += ` AND year = $${params.length}`;
+		}
+
+		if (min_rating) {
+			params.push(min_rating);
+			query += ` AND imdb_rating >= $${params.length}`;
+		}
+
+		if (sort_by && ["year", "imdb_rating"].includes(sort_by as string)) {
+			const orderBy = order === "desc" ? "DESC" : "ASC";
+			query += ` ORDER BY ${sort_by} ${orderBy}`;
+		}
+
+		const pageNum = Number(page) || 1;
+		const pageSize = Number(limit) || 10;
+		const offset = (pageNum - 1) * pageSize;
+
+		query += ` LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+		params.push(pageSize, offset);
+
+		const result = await pool.query(query, params);
+		res.json({
+			page: pageNum,
+			limit: pageSize,
+			total_results: result.rows.length,
+			data: result.rows,
+		});
 	} catch (error) {
 		console.error("Database query error:", error);
 		res.status(500).json({ error: "Error fetching movies" });
 	}
 });
-
-// GET a movie by ID
-router.get(
-	"/:id",
-	async (req: Request<{ id: string }>, res: Response): Promise<void> => {
-		try {
-			const { id } = req.params;
-			const result = await pool.query(
-				"SELECT * FROM movies WHERE id = $1",
-				[id]
-			);
-
-			if (result.rows.length === 0) {
-				res.status(404).json({ error: "Movie not found" });
-				return;
-			}
-
-			res.json(result.rows[0]);
-		} catch (error) {
-			console.error("Database query error:", error);
-			res.status(500).json({ error: "Error fetching movie" });
-		}
-	}
-);
 
 export default router;

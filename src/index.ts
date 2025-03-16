@@ -12,6 +12,9 @@ import directorsRoutes from "./routes/directors";
 import moviesRoutes from "./routes/movies";
 import tvShowsRoutes from "./routes/tvshows";
 
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./config/swagger";
+
 dotenv.config();
 
 const app = express();
@@ -21,6 +24,9 @@ app.use(express.json());
 
 app.use(logRequest);
 app.use(logResponse);
+
+// ✅ API Documentation Route
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // ✅ Authentication routes (No API Key required)
 app.use("/api/auth", authRoutes);

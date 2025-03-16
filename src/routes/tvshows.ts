@@ -1,7 +1,13 @@
 import express, { Request, Response, Router } from "express";
 import pool from "../config/database";
+import { validateApiKey } from "../middleware/apiKeyMiddleware";
+import { authenticateToken } from "../middleware/authMiddleware";
 
 const router: Router = express.Router();
+
+// ✅ Apply API Key validation and JWT authentication to all routes
+router.use(validateApiKey);
+router.use(authenticateToken);
 
 // ✅ Get all TV shows with filtering, sorting, and pagination
 router.get("/", async (req: Request, res: Response): Promise<void> => {
@@ -37,7 +43,7 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 		res.json({
 			page: pageNum,
 			limit: pageSize,
-			total_results: result.rows.length,
+			total_results: result.rowCount,
 			data: result.rows,
 		});
 	} catch (error) {

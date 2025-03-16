@@ -1,5 +1,6 @@
-import dotenv from "dotenv";
+// @ts-ignore
 import type { Knex } from "knex";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -14,4 +15,5 @@ const config: Knex.Config = {
 	},
 };
 
-export default config;
+// ✅ Use `module.exports` instead of `export default`
+module.exports = config;

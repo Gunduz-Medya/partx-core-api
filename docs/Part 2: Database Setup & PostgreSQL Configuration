@@ -1,0 +1,132 @@
+### **Part 2: Database Setup & PostgreSQL Configuration**
+
+This section covers setting up **PostgreSQL**, configuring the database connection, and integrating it with the **Part X Core API**.
+
+---
+
+## **📌 Step 1: Install PostgreSQL**
+If you haven't installed PostgreSQL yet, install it using the following method:
+
+- **Mac (Homebrew):**
+  ```bash
+  brew install postgresql
+  ```
+- **Ubuntu:**
+  ```bash
+  sudo apt update && sudo apt install postgresql postgresql-contrib
+  ```
+- **Windows:** Download and install from [PostgreSQL official site](https://www.postgresql.org/download/)
+
+---
+
+## **📌 Step 2: Start PostgreSQL Service**
+Make sure PostgreSQL is running:
+```bash
+sudo service postgresql start  # Linux
+brew services start postgresql  # Mac
+```
+
+To check if PostgreSQL is running:
+```bash
+psql -V
+```
+
+---
+
+## **📌 Step 3: Create a Database & User**
+1️⃣ Access PostgreSQL:
+```bash
+psql postgres
+```
+
+2️⃣ Create a new user:
+```sql
+CREATE USER partx_admin WITH PASSWORD 'PXN_pg8817PA';
+```
+
+3️⃣ Create a new database:
+```sql
+CREATE DATABASE partx_core;
+```
+
+4️⃣ Grant privileges to the user:
+```sql
+GRANT ALL PRIVILEGES ON DATABASE partx_core TO partx_admin;
+```
+
+5️⃣ Exit PostgreSQL:
+```sql
+\q
+```
+
+---
+
+## **📌 Step 4: Configure Database Connection in .env**
+Create a `.env` file in the project root and add:
+```env
+DATABASE_URL=postgresql://partx_admin:PXN_pg8817PA@localhost:5432/partx_core
+```
+
+---
+
+## **📌 Step 5: Install Knex.js & pg Package**
+Knex.js is used as the query builder. Install it along with `pg` for PostgreSQL support:
+```bash
+npm install knex pg
+```
+
+Install TypeScript types:
+```bash
+npm install --save-dev @types/pg
+```
+
+---
+
+## **📌 Step 6: Create Knex Configuration File**
+Create `knexfile.ts` in the project root and add:
+```typescript
+import type { Knex } from "knex";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const config: Knex.Config = {
+  client: "pg",
+  connection: process.env.DATABASE_URL,
+  migrations: {
+    directory: "./migrations",
+    extension: "ts",
+  },
+  seeds: {
+    directory: "./seeds",
+  },
+};
+
+export default config;
+```
+
+---
+
+## **📌 Step 7: Initialize Knex.js**
+Run the following command to create a `knexfile.ts` configuration:
+```bash
+npx knex init
+```
+
+Verify the generated file and ensure it matches our manual `knexfile.ts` setup.
+
+---
+
+## **🎯 Summary**
+
+| Step | Action | Status |
+|------|--------|--------|
+| ✅ **1** | Installed PostgreSQL | 🔄 |
+| ✅ **2** | Created database & user | 🔄 |
+| ✅ **3** | Set up `.env` file for database connection | 🔄 |
+| ✅ **4** | Installed Knex.js & PostgreSQL dependencies | 🔄 |
+| ✅ **5** | Configured `knexfile.ts` | 🔄 |
+| ✅ **6** | Initialized Knex.js | 🔄 |
+
+🚀 **Now the database is set up and connected!** Next, we will create database tables and migrations in **Part 3**.
+

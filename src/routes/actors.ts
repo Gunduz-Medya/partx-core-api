@@ -21,12 +21,15 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 		const query = `SELECT * FROM actors LIMIT $1 OFFSET $2`;
 		const result = await pool.query(query, [pageSize, offset]);
 
-		res.json({
+		// ✅ Log için responseData ekliyoruz
+		res.locals.responseData = {
 			page: pageNum,
 			limit: pageSize,
 			total_results: result.rowCount,
 			data: result.rows,
-		});
+		};
+
+		res.json(res.locals.responseData);
 	} catch (error) {
 		console.error("Database query error:", error);
 		res.status(500).json({ error: "Error fetching actors" });

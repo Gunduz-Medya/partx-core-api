@@ -11,9 +11,8 @@ export async function validateApiKey(
 		const apiKey = req.header("x-api-key");
 
 		if (!apiKey) {
-			res.status(401).json({
-				error: "Unauthorized: No API key provided",
-			});
+			res.locals.responseData = { error: "Unauthorized: No API key provided" };
+			res.status(401).json(res.locals.responseData);
 			return;
 		}
 
@@ -23,15 +22,17 @@ export async function validateApiKey(
 		);
 
 		if (result.rows.length === 0) {
-			res.status(403).json({ error: "Invalid API key" });
+			res.locals.responseData = { error: "Invalid API key" };
+			res.status(403).json(res.locals.responseData);
 			return;
 		}
 
-		next(); // ✅ Correctly calling next() if API key is valid
+		next(); // ✅ Continue if API Key valid.
 	} catch (error) {
 		console.error("Error validating API key:", error);
-		res.status(500).json({
+		res.locals.responseData = {
 			error: "Server error while validating API key",
-		});
+		};
+		res.status(500).json(res.locals.responseData);
 	}
 }

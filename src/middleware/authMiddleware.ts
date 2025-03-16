@@ -12,15 +12,19 @@ export function authenticateToken(
 	const token = req.header("Authorization")?.split(" ")[1];
 
 	if (!token) {
-		res.status(401).json({ error: "Unauthorized: No token provided" });
+		const errorResponse = { error: "Unauthorized: No token provided" };
+		res.locals.responseData = errorResponse;
+		res.status(401).json(errorResponse);
 		return;
 	}
 
 	try {
 		const decoded = jwt.verify(token, SECRET_KEY);
 		(req as any).user = decoded;
-		next(); // ✅ Correctly calling next() if the token is valid
+		next();
 	} catch (error) {
-		res.status(403).json({ error: "Invalid token" });
+		const errorResponse = { error: "Invalid token" };
+		res.locals.responseData = errorResponse;
+		res.status(403).json(errorResponse);
 	}
 }

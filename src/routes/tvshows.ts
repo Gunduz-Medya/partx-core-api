@@ -40,12 +40,16 @@ router.get("/", async (req: Request, res: Response): Promise<void> => {
 		params.push(pageSize, offset);
 
 		const result = await pool.query(query, params);
-		res.json({
+
+		// ✅ Log için responseData ekliyoruz
+		res.locals.responseData = {
 			page: pageNum,
 			limit: pageSize,
 			total_results: result.rowCount,
 			data: result.rows,
-		});
+		};
+
+		res.json(res.locals.responseData);
 	} catch (error) {
 		console.error("Database query error:", error);
 		res.status(500).json({ error: "Error fetching TV shows" });

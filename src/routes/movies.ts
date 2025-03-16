@@ -5,7 +5,11 @@ import { authenticateToken } from "../middleware/authMiddleware";
 
 const router: Router = express.Router();
 
-// ✅ Get all movies with filtering, sorting, pagination (Requires API Key)
+// ✅ Apply API Key validation and JWT authentication to all routes
+router.use(validateApiKey);
+router.use(authenticateToken);
+
+// ✅ Get all movies with filtering, sorting, pagination
 router.get(
 	"/",
 	validateApiKey,
@@ -13,7 +17,6 @@ router.get(
 		try {
 			const { genre, year, min_rating, sort_by, order, page, limit } =
 				req.query;
-
 			let query = "SELECT * FROM movies WHERE 1=1";
 			const params: any[] = [];
 
@@ -21,17 +24,14 @@ router.get(
 				params.push(genre);
 				query += ` AND genre = $${params.length}`;
 			}
-
 			if (year) {
 				params.push(year);
 				query += ` AND year = $${params.length}`;
 			}
-
 			if (min_rating) {
 				params.push(min_rating);
 				query += ` AND imdb_rating >= $${params.length}`;
 			}
-
 			if (
 				sort_by &&
 				["year", "imdb_rating"].includes(sort_by as string)
@@ -50,22 +50,21 @@ router.get(
 			params.push(pageSize, offset);
 
 			const result = await pool.query(query, params);
-			res.json({
+
+			// ✅ Response'u locals içinde kaydet (Güncellendi)
+			res.locals.responseData = {
 				page: pageNum,
 				limit: pageSize,
-				total_results: result.rows.length,
+				total_results: result.rowCount,
 				data: result.rows,
-			});
+			};
+
+			res.json(res.locals.responseData);
 		} catch (error) {
-			console.error("Database query error:", error);
+			console.error("❌ Database query error:", error);
 			res.status(500).json({ error: "Error fetching movies" });
 		}
 	}
 );
-
-// ✅ Protected route for logged-in users only (Requires JWT)
-router.get("/protected", authenticateToken, async (_req, res) => {
-	res.json({ message: "This is a protected route!" });
-});
 
 export default router;
